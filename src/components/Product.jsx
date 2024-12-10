@@ -11,13 +11,14 @@ const Product = () => {
   // Function to fetch data
   const fetchData = (page) => {
     setLoading(true); // Set loading state
-    fetch(`https://fakestoreapi.com/products?page=${page}&limit=5`)
+    fetch(`https://randomuser.me/api?page=${page}`)
       .then((res) => res.json())
       .then((res) => {
-        if (res.length === 0) {
+        console.log(res);
+        if (res.results.length === 0) {
           setHasMore(false); // If no data is returned, stop further requests
         } else {
-          setData((prevData) => [...prevData, ...res]); // Add new data to the existing state
+          setData((prevData) => [...prevData, ...res.results]); // Add new data to the existing state
         }
       })
       .finally(() => {
@@ -29,6 +30,7 @@ const Product = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
+        console.log(entries)
         // Check if the box is in the viewport
         entries.forEach((entry) => {
           if (entry.isIntersecting && hasMore && !loading) {
@@ -55,13 +57,16 @@ const Product = () => {
     };
   }, [hasMore, loading]); // Dependencies: hasMore and loading state
 
+  useEffect(() => {
+    console.log(data); // Logs the data whenever it's updated
+  }, [data]);
+
   return (
     <div>
-    
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {data.map((item) => (
           <div
-            key={item.id}
+            key={item.login.uuid} // Use unique UUID for key
             style={{
               border: '5px solid whitesmoke',
               padding: '10px',
@@ -71,32 +76,33 @@ const Product = () => {
               width: '50%',
             }}
           >
-            <img src={item.image} alt={item.title} style={{ width: '100%' }} />
+            <img src={item.picture.thumbnail} alt={`${item.name.first} ${item.name.last}`} style={{ width: '100%' }} />
             <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'black' }}>
-              {item.title}
+              {item.name.title} {item.name.first} {item.name.last}
             </p>
-            <p>{item.description}</p>
-            <p style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>${item.price}</p>
+            <p style={{ fontSize: '10px', fontWeight: 'bold', color: 'black' }}>{item.email}</p>
+            <p style={{ fontSize: '10px', fontWeight: 'bold', color: 'black' }}>{item.location.city}, {item.location.country}</p>
           </div>
         ))}
       </div>
 
-      {/* This is the element we observe */}
       <div
         ref={boxRef}
         style={{
           width: '100%',
           height: '100px',
-          backgroundColor: 'grey',
           marginTop: '20px',
         }}
       >
-        {loading && <p>Loading more products...</p>}
-        {!hasMore && <p>No more products to load.</p>}
+        {loading && <Loading />}
+        {!hasMore && <p>No more users to load.</p>}
       </div>
     </div>
   );
 };
 
-export default Product;
+function Loading() {
+  return <h1>Loading .. 🔥🔥</h1>;
+}
 
+export default Product;
